@@ -22,29 +22,40 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string().min(1, { message: 'Password is required.' }),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+    email: z.string().email({ message: 'Please enter a valid email address.' }),
+    password: z
+      .string()
+      .min(8, { message: 'Password must be at least 8 characters.' }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match.",
+    path: ['confirmPassword'],
+  });
 
-interface LoginCardProps {
+interface SignupCardProps {
   className?: string;
 }
 
-const LoginCard: React.FC<LoginCardProps> = ({ className }) => {
+const SignupCard: React.FC<SignupCardProps> = ({ className }) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    console.log('Attempting login with:', values);
+    console.log('Attempting to create account with:', values);
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
@@ -55,12 +66,25 @@ const LoginCard: React.FC<LoginCardProps> = ({ className }) => {
   return (
     <Card className={cn('w-full max-w-sm bg-card', className)}>
       <CardHeader className="text-center p-6 pb-4">
-        <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
+        <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
       </CardHeader>
 
       <CardContent className="p-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"
@@ -74,34 +98,35 @@ const LoginCard: React.FC<LoginCardProps> = ({ className }) => {
                 </FormItem>
               )}
             />
-
-            <div className="space-y-1">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} disabled={isLoading} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="text-right text-sm">
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto font-normal text-primary"
-                >
-                  Forgot Password
-                </Button>
-              </div>
-            </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} disabled={isLoading} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Button type="submit" className="w-full rounded-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
         </Form>
@@ -109,13 +134,13 @@ const LoginCard: React.FC<LoginCardProps> = ({ className }) => {
 
       <CardFooter className="flex justify-center p-6 pt-0">
         <p className="text-sm text-center text-muted-foreground">
-          Don't have an account?{' '}
+          Already have an account?{' '}
           <Button
             type="button"
             variant="link"
             className="p-0 h-auto font-semibold text-primary"
           >
-            SignUp
+            Login
           </Button>
         </p>
       </CardFooter>
@@ -123,4 +148,4 @@ const LoginCard: React.FC<LoginCardProps> = ({ className }) => {
   );
 };
 
-export default LoginCard;
+export default SignupCard;
